@@ -30,11 +30,11 @@ data GameState = Game
 initialState :: GameState
 initialState = Game
     { ballLoc = (-10, 30)
-    , ballVel = (10, -30)
-    , player1 = 40
-    , player2 = -80
+    , ballVel = (-10, -35)
+    , player1 = 0
+    , player2 = 0
     }
-    
+
 -- | Convert a game state into a picture.
 render :: GameState -- ^ The game state to render.
        -> Picture   -- ^ A picture of this game state.
@@ -81,7 +81,7 @@ moveBall seconds game = game { ballLoc = (x', y') }
     -- New locations
     x' = x + vx * seconds
     y' = y + vy * seconds
-    
+
 -- | Number of frames to show per seconds
 fps :: Int
 fps = 60
@@ -136,17 +136,17 @@ wallCollision (_, y) radius = topCollision || bottomCollision
   where
     topCollision = y - radius <= -fromIntegral height / 2
     bottomCollision = y + radius >= fromIntegral height / 2
-    
+
 -- | Given position and radius of the ball, return wether a collision occured.
 paddleCollision :: Radius -> GameState -> Bool
 paddleCollision radius game@(Game {player1 = p1, player2 = p2})
     = leftCollision || rightCollision
       where
         (x, y) = ballLoc game
-        leftCollision = x - radius <=  -fromIntegral width / 2
-                      && y <= (p1 + 40) && y >= (p1 - 40)
-        rightCollision = x - radius >=  fromIntegral width / 2
-                      && y <= (p2 + 40) && y >= (p2 - 40)
+        leftCollision = (x - radius <= -110)
+                      && (y <= p1 + 40) && (y >= p1 - 40)
+        rightCollision = (x + radius >=  130)
+                      && (y <= p2 + 40) && (y >= p2 - 40)
 
 
 main :: IO ()
