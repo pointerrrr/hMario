@@ -2,6 +2,9 @@ module Main(main, GameState(..), initialState, render) where
 
 import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
+import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Data.Picture
+import Graphics.Gloss.Data.Vector
 
 type Radius = Float
 type Position = (Float, Float)
@@ -17,22 +20,25 @@ window = InWindow "Pong" (width, height) (offset, offset)
 background :: Color
 background = black
 
+data Player = Player Point Vector
+  deriving (Show)
+
 -- | Data describing the state of the game.
 data GameState = Game
-    { ballLoc :: (Float, Float) -- ^ Pong ball (x, y) location.
-    , ballVel :: (Float, Float) -- ^ Pong ball (x, y) velocity.
-    , player1 :: Float          -- ^ Left player paddle height.
+    { ballLoc :: Point -- ^ Pong ball (x, y) location.
+    , ballVel :: Vector -- ^ Pong ball (x, y) velocity.
+    , player1 :: Player         -- ^ Left player paddle height.
                                 -- Zero is the middle of the screen.
-    , player2 :: Float          -- ^ Right player paddle height.
+    , player2 :: Player          -- ^ Right player paddle height.
     } deriving Show
 
 -- | The starting state of the game.
 initialState :: GameState
 initialState = Game
     { ballLoc = (-10, 30)
-    , ballVel = (-10, -35)
-    , player1 = 0
-    , player2 = 0
+    , ballVel = (-20, 10)
+    , player1 = (Player (120,0) (0,0))
+    , player2 = (Player (-120,0) (0,0))
     }
 
 -- | Convert a game state into a picture.
@@ -41,8 +47,8 @@ render :: GameState -- ^ The game state to render.
 render game =
     pictures [ ball
              , walls
-             , mkPaddle rose 120 $ player1 game
-             , mkPaddle orange (-120) $ player2 game
+             , mkPaddle rose (player1 game)
+             , mkPaddle orange (player2 game)
              ]
   where
     -- The pong ball.
@@ -60,13 +66,13 @@ render game =
     walls = pictures [wall 150, wall (-150)]
 
     -- Make a paddle of a given border and vertical offset.
-    mkPaddle :: Color -> Float -> Float -> Picture
-    mkPaddle col x y = pictures
-        [ translate x y $ color col $ rectangleSolid 26 86
-        , translate x y $ color paddleColor $ rectangleSolid 20 80
-        ]
+mkPaddle :: Color -> Player -> Picture
+mkPaddle col (Player (x,y) _) = pictures
+  [ translate x y $ color col $ rectangleSolid 26 86
+  , translate x y $ color paddleColor $ rectangleSolid 20 80
+  ]
 
-    paddleColor = light $ light blue
+paddleColor = light $ light blue
 
 -- | Update the ball position using its curent velocity
 moveBall :: Float       -- ^ The number of seconds since last update.
@@ -88,8 +94,8 @@ fps = 60
 
 -- | Update the game by moving the ball.
 -- Ignore the ViewPort argument.
-update :: ViewPort -> Float -> GameState -> GameState
-update _ seconds = paddleBounce . wallBounce . moveBall seconds
+update :: Float -> GameState -> GameState
+update seconds = paddleBounce . wallBounce . moveBall seconds
 
 -- | Detect a collision with a paddle. Upon collisisions,
 -- change the velocity of the ball to bounce it off the paddle.
@@ -131,7 +137,7 @@ wallBounce game = game { ballVel = (vx, vy') }
                 vy
 
 -- | Given position and radius of the ball, return wether a collision occured.
-wallCollision :: Position -> Radius -> Bool
+wallCollision :: Point -> Radius -> Bool
 wallCollision (_, y) radius = topCollision || bottomCollision
   where
     topCollision = y - radius <= -fromIntegral height / 2
@@ -139,18 +145,31 @@ wallCollision (_, y) radius = topCollision || bottomCollision
 
 -- | Given position and radius of the ball, return wether a collision occured.
 paddleCollision :: Radius -> GameState -> Bool
-paddleCollision radius game@(Game {player1 = p1, player2 = p2})
+paddleCollision radius game@(Game {player1 = (Player (x1,y1) _), player2 = (Player (x2,y2) _ )})
     = leftCollision || rightCollision
       where
         (x, y) = ballLoc game
-        leftCollision = (x - radius <= -110)
-                      && (y <= p1 + 40) && (y >= p1 - 40)
-        rightCollision = (x + radius >=  130)
-                      && (y <= p2 + 40) && (y >= p2 - 40)
+        leftCollision = (x - radius <= x1)
+                      && (y <= y1 + 40) && (y >= y1 - 40)
+        rightCollision = (x + radius >=  x2)
+                      && (y <= y2 + 40) && (y >= y2 - 40)
+
+
+-- | Respond to key events.
+handleKeys :: Event -> GameState -> GameState
+-- For an 's' keypress, reset the ball to the center.
+handleKeys (EventKey (Char 's') Down _ _) game =
+  game {player1 = (Player _ (_, -5))}
+handleKeys (EventKey (Char 's') Down _ _) game =
+  game {player1 = (Player _ (_, 0))}
+handleKeys (EventKey (Char 'w') Down _ _) game@(Game {player1 = x}) =
+  game {player1 = x + 5}
+-- Do nothing for all other events.
+handleKeys _ game = game
 
 
 main :: IO ()
-main = simulate window background fps initialState render update
+main = play window background fps initialState render handleKeys update
   where
     frame :: Float -> Picture
     frame seconds = render $ moveBall seconds initialState
