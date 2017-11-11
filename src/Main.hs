@@ -20,8 +20,10 @@ window = InWindow "Pong" (width, height) (offset, offset)
 background :: Color
 background = black
 
-data Player = Player Point Vector
-  deriving (Show)
+data Player = Player
+    { location  :: Point
+    , direction :: Vector
+    } deriving Show
 
 -- | Data describing the state of the game.
 data GameState = Game
@@ -74,11 +76,20 @@ mkPaddle col (Player (x,y) _) = pictures
 
 paddleColor = light $ light blue
 
+moveGame :: Float -> GameState -> GameState
+moveGame seconds game = undefined
+
+    --game { ballLoc = (moveBall game seconds)
+    --                         , player1 = (movePlayer game seconds)
+    --                         }
+movePlayer :: Float -> Player -> Player
+movePlayer = undefined
+
 -- | Update the ball position using its curent velocity
 moveBall :: Float       -- ^ The number of seconds since last update.
-         -> GameState   -- ^ The initial game state.
-         -> GameState   -- ^ A new game state with an updated ball position
-moveBall seconds game = game { ballLoc = (x', y') }
+         -> GameState   -- ^ The initial ball position.
+         -> GameState       -- ^ A new point for the ball
+moveBall seconds game = game {ballLoc = (x', y')}
   where
     -- Old locations and velocities
     (x, y) = ballLoc game
@@ -95,6 +106,7 @@ fps = 60
 -- | Update the game by moving the ball.
 -- Ignore the ViewPort argument.
 update :: Float -> GameState -> GameState
+-- moveBall wordt moveGame
 update seconds = paddleBounce . wallBounce . moveBall seconds
 
 -- | Detect a collision with a paddle. Upon collisisions,
@@ -158,12 +170,22 @@ paddleCollision radius game@(Game {player1 = (Player (x1,y1) _), player2 = (Play
 -- | Respond to key events.
 handleKeys :: Event -> GameState -> GameState
 -- For an 's' keypress, reset the ball to the center.
-handleKeys (EventKey (Char 's') Down _ _) game =
-  game {player1 = (Player _ (_, -5))}
-handleKeys (EventKey (Char 's') Down _ _) game =
-  game {player1 = (Player _ (_, 0))}
-handleKeys (EventKey (Char 'w') Down _ _) game@(Game {player1 = x}) =
-  game {player1 = x + 5}
+handleKeys (EventKey (Char 's') Down _ _) game@(Game _ _ p _) =
+    game {player1 = (Player (location p) (x, -5))}
+  where
+    (x,_) = direction p
+handleKeys (EventKey (Char 's') Up _ _) game@(Game _ _ p _) =
+    game {player1 = (Player (location p) (x, 0))}
+  where
+    (x,_) = direction p
+handleKeys (EventKey (Char 'w') Down _ _) game@(Game _ _ p _) =
+    game {player1 = (Player (location p) (x, 5))}
+  where
+    (x,_) = direction p
+handleKeys (EventKey (Char 'w') Up _ _) game@(Game _ _ p _) =
+    game {player1 = (Player (location p) (x, 0))}
+  where
+    (x,_) = direction p
 -- Do nothing for all other events.
 handleKeys _ game = game
 
