@@ -15,50 +15,79 @@ height = 300
 offset = 100
 
 window :: Display
-window = InWindow "Pong" (width, height) (offset, offset)
+window = InWindow "Moria" (width, height) (offset, offset)
 
 background :: Color
 background = black
 
-data Player = Player
-    { location  :: Point
-    , direction :: Vector
-    } deriving Show
+class Show a => Entity a where
+    location  :: a -> Point
+    direction :: a -> Vector
+    move :: Float -> a ->  a
 
+instance Entity Player where
+    location (Player pos _)  = pos
+    direction (Player _ dir) = dir
+    move = movePlayer
+
+data Player = Player Point Vector
+    deriving Show
+
+instance Entity Enemy where
+    location (Enemy _ pos _) = pos
+    direction (Enemy _ _ dir) = dir
+    move = moveEnemy
+
+data Enemy = Enemy EnemyType Point Vector
+    deriving Show
+
+data EnemyType
+    = Goomba
+    | Koopa
+    | PiranhaPlant
+    | BulletBill
+  deriving Show
+    
 -- | Data describing the state of the game.
 data GameState = Game
-    { ballLoc :: Point -- ^ Pong ball (x, y) location.
-    , ballVel :: Vector -- ^ Pong ball (x, y) velocity.
-    , player1 :: Player         -- ^ Left player paddle height.
-                                -- Zero is the middle of the screen.
-    , player2 :: Player          -- ^ Right player paddle height.
+    { player :: Player
+    , enemies :: [Enemy] -- ^ Right player paddle height.
+    , pressedKeys :: PressedKeys
+    } deriving Show
+    
+data PressedKeys = PressedKeys
+    { upKey :: Bool
+    , downKey :: Bool
+    , leftKey :: Bool
+    , rightKey :: Bool
+    , xKey :: Bool
+    , zKey :: Bool
+    , pKey :: Bool
     } deriving Show
 
 -- | The starting state of the game.
 initialState :: GameState
 initialState = Game
-    { ballLoc = (-10, 30)
-    , ballVel = (-20, 10)
-    , player1 = (Player (120,0) (0,0))
-    , player2 = (Player (-120,0) (0,0))
+    { player = (Player (120,0) (0,0))
+    , enemies = []
+    , pressedKeys = PressedKeys
+        { upKey = False
+        , downKey = False
+        , leftKey = False
+        , rightKey = False
+        , xKey = False
+        , zKey = False
+        , pKey = False
+        }
     }
 
 -- | Convert a game state into a picture.
-render :: GameState -- ^ The game state to render.
-       -> Picture   -- ^ A picture of this game state.
+render :: GameState -> Picture
 render game =
-    pictures [ ball
-             , walls
-             , mkPaddle rose (player1 game)
-             , mkPaddle orange (player2 game)
+    pictures [ walls
+             , mkPlayer white (player game)
              ]
   where
-    -- The pong ball.
-    ball = uncurry translate (ballLoc game) $ color ballColor $
-             circleSolid 10
-    ballColor = dark red
-
-    -- The bootom and top walls.
     wall :: Float -> Picture
     wall offset = translate 0 offset $
                     color wallColor $
@@ -67,37 +96,23 @@ render game =
     wallColor = greyN 0.5
     walls = pictures [wall 150, wall (-150)]
 
-    -- Make a paddle of a given border and vertical offset.
-mkPaddle :: Color -> Player -> Picture
-mkPaddle col (Player (x,y) _) = pictures
-  [ translate x y $ color col $ rectangleSolid 26 86
-  , translate x y $ color paddleColor $ rectangleSolid 20 80
-  ]
+mkPlayer :: Color -> Player -> Picture
+mkPlayer col (Player (x,y) _) = translate x y $ color col $ rectangleSolid 26 86
+    
+-- Make a paddle of a given border and vertical offset.
 
-paddleColor = light $ light blue
+movePoint :: Float -> Point -> Vector -> Point
+movePoint seconds (x,y) (vx, vy) = (x + vx * seconds, y + vy * seconds)
 
 moveGame :: Float -> GameState -> GameState
-moveGame seconds game = undefined
+moveGame seconds game@(Game player enemies keys) =
+    game{player = movePlayer seconds player, enemies = map (moveEnemy seconds) enemies}
 
-    --game { ballLoc = (moveBall game seconds)
-    --                         , player1 = (movePlayer game seconds)
-    --                         }
 movePlayer :: Float -> Player -> Player
-movePlayer = undefined
+movePlayer seconds (Player pos dir) = (Player (movePoint seconds pos dir) dir)
 
--- | Update the ball position using its curent velocity
-moveBall :: Float       -- ^ The number of seconds since last update.
-         -> GameState   -- ^ The initial ball position.
-         -> GameState       -- ^ A new point for the ball
-moveBall seconds game = game {ballLoc = (x', y')}
-  where
-    -- Old locations and velocities
-    (x, y) = ballLoc game
-    (vx, vy) = ballVel game
-
-    -- New locations
-    x' = x + vx * seconds
-    y' = y + vy * seconds
+moveEnemy :: Float -> Enemy -> Enemy
+moveEnemy a = undefined
 
 -- | Number of frames to show per seconds
 fps :: Int
@@ -107,91 +122,57 @@ fps = 60
 -- Ignore the ViewPort argument.
 update :: Float -> GameState -> GameState
 -- moveBall wordt moveGame
-update seconds = paddleBounce . wallBounce . moveBall seconds
-
--- | Detect a collision with a paddle. Upon collisisions,
--- change the velocity of the ball to bounce it off the paddle.
-paddleBounce :: GameState -> GameState
-paddleBounce game = game { ballVel = (vx', vy) }
-  where
-    -- Radius. Use same thing as in 'render'.
-    radius = 10
-
-    -- The old velocities
-    (vx, vy) = ballVel game
-
-    vx' = if paddleCollision radius game
-            then
-                -- Update velocity
-                -vx
-            else
-                -- Do nothing. Return the old velocity
-                vx
+update seconds = moveGame seconds
 
 
--- | Detect a collision with one of the side walls. Upon collisions,
--- update the velocity of the ball to bounce it off the wall.
-wallBounce :: GameState -> GameState
-wallBounce game = game { ballVel = (vx, vy') }
-  where
-    -- Radius. Use the same thing as in 'render'.
-    radius = 10
-
-    -- The old velocities
-    (vx, vy) = ballVel game
-
-    vy' = if wallCollision (ballLoc game) radius
-            then
-                -- Update the velocity.
-                -vy
-            else
-                -- Do nothing. Return the old velocity
-                vy
-
--- | Given position and radius of the ball, return wether a collision occured.
-wallCollision :: Point -> Radius -> Bool
-wallCollision (_, y) radius = topCollision || bottomCollision
-  where
-    topCollision = y - radius <= -fromIntegral height / 2
-    bottomCollision = y + radius >= fromIntegral height / 2
-
--- | Given position and radius of the ball, return wether a collision occured.
-paddleCollision :: Radius -> GameState -> Bool
-paddleCollision radius game@(Game {player1 = (Player (x1,y1) _), player2 = (Player (x2,y2) _ )})
-    = leftCollision || rightCollision
-      where
-        (x, y) = ballLoc game
-        leftCollision = (x - radius <= x1)
-                      && (y <= y1 + 40) && (y >= y1 - 40)
-        rightCollision = (x + radius >=  x2)
-                      && (y <= y2 + 40) && (y >= y2 - 40)
 
 
 -- | Respond to key events.
 handleKeys :: Event -> GameState -> GameState
 -- For an 's' keypress, reset the ball to the center.
-handleKeys (EventKey (Char 's') Down _ _) game@(Game _ _ p _) =
-    game {player1 = (Player (location p) (x, -5))}
-  where
-    (x,_) = direction p
-handleKeys (EventKey (Char 's') Up _ _) game@(Game _ _ p _) =
-    game {player1 = (Player (location p) (x, 0))}
-  where
-    (x,_) = direction p
-handleKeys (EventKey (Char 'w') Down _ _) game@(Game _ _ p _) =
-    game {player1 = (Player (location p) (x, 5))}
-  where
-    (x,_) = direction p
-handleKeys (EventKey (Char 'w') Up _ _) game@(Game _ _ p _) =
-    game {player1 = (Player (location p) (x, 0))}
-  where
-    (x,_) = direction p
+-- right
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { rightKey = True }}
+handleKeys (EventKey (SpecialKey KeyRight) Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { rightKey = False }}
+-- left
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { leftKey = True }}
+handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { leftKey = False }}
+-- up
+handleKeys (EventKey (SpecialKey KeyUp) Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { upKey = True }}
+handleKeys (EventKey (SpecialKey KeyUp) Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { upKey = False }}
+-- down
+handleKeys (EventKey (SpecialKey KeyDown) Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { downKey = True }}
+handleKeys (EventKey (SpecialKey KeyDown) Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { downKey = False }}
+-- z
+handleKeys (EventKey (Char 'z') Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { zKey = True }}
+handleKeys (EventKey (Char 'z') Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { zKey = False }}
+-- x
+handleKeys (EventKey (Char 'x') Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { xKey = True }}
+handleKeys (EventKey (Char 'x') Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { xKey = False }}
+-- p
+handleKeys (EventKey (Char 'p') Down _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { pKey = True }}
+handleKeys (EventKey (Char 'p') Up _ _) game@(Game _ _ keys) =
+    game { pressedKeys = keys { pKey = False }}
 -- Do nothing for all other events.
 handleKeys _ game = game
 
+playerSpeed :: Float
+playerSpeed = 25
 
 main :: IO ()
 main = play window background fps initialState render handleKeys update
   where
     frame :: Float -> Picture
-    frame seconds = render $ moveBall seconds initialState
+    frame seconds = render $ moveGame seconds initialState
