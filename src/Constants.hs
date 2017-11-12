@@ -26,7 +26,7 @@ initialBlockList = [ Block Stone (x, -120)
                    | x <- [-10 * blockSize, -9 * blockSize .. 10 * blockSize]
                    ] ++ [Block Stone (x,y)
                         | x <- [-5 * blockSize]
-                        , y <- [-120, -110 .. 50]
+                        , y <- [-80, -70 .. 50]
                         ]
 
 width, height, offset :: Int
@@ -41,7 +41,7 @@ background :: Color
 background = black
 
 playerSpeed :: Float
-playerSpeed = 25
+playerSpeed = 50
 
 playerSize, blockSize :: Float
 playerSize = 20

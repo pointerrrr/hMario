@@ -4,8 +4,8 @@ import Definitions
 import Entities
 
 moveGame :: Float -> GameState -> GameState
-moveGame seconds game = collision seconds
-    ( physicsSim seconds (moveEntities seconds game))
+moveGame seconds game = collision  seconds
+    (physicsSim  seconds (moveEntities seconds game))
 
 physicsSim :: Float -> GameState -> GameState
 physicsSim seconds game = game {player =
@@ -26,8 +26,8 @@ collision seconds game =
     enemyList = enemies game
 
 subFoldr :: Entity a => Block -> a -> a
-subFoldr block = upCollisionBlock block . downCollisionBlock block .
-    rightCollisionBlock block . leftCollisionBlock block
+subFoldr block = rightCollisionBlock block . leftCollisionBlock block .
+                    upCollisionBlock block . downCollisionBlock block
 
 moveEntities :: Float -> GameState -> GameState
 moveEntities seconds game@(Game player enemies _ keys) =

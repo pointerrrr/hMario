@@ -65,7 +65,7 @@ render game =
 
 mkPlayer :: Color -> Player -> Picture
 mkPlayer col (Player (x,y) _ _) = translate x y $ color col $
-                                    rectangleSolid 25 25
+                                    rectangleSolid playerSize playerSize
 
 -- | Update the game.
 update :: Float -> GameState -> GameState

@@ -30,60 +30,68 @@ rightCollisionEntityPlayer  :: Entity a => Player -> a -> Player
 -- | Up and down are somehow switched, dus upCollision has jump = False (temp)
 upCollisionBlockPlayer block player
     |    (py - psize <= by + bsize)     -- (1)
-      && (px + psize >= bx - bsize)     -- (2)
-      && (px - psize <= bx + bsize)     -- (3)
+      && (px + psize >= bx - bsize + 3)     -- (2)
+      && (px - psize <= bx + bsize - 3)     -- (3)
       && (py + psize >= by - bsize)     -- (5)
-        = Player (px, by + bsize + psize) (vx, 0) True
+        = Player (px, py + pbDelta) (vx, 0) True
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) _ = player
-    psize = (playerSize + 1) / 2
-    bsize = (blockSize + 1) / 2
+    psize = (playerSize ) / 2
+    bsize = (blockSize ) / 2
+    pbDelta = (playerSize/2 + blockSize/2) -(py - by)
 
 -- | Up/down switched, thus here jump = True (for now)
 downCollisionBlockPlayer block player
     |    (py + psize <= by + bsize) -- (4)
-      && (px + psize >= bx - bsize) -- (2)
-      && (px - psize <= bx + bsize) -- (3)
+      && (px + psize >= bx - bsize + 3) -- (2)
+      && (px - psize <= bx + bsize - 3) -- (3)
       && (py - psize <= by + bsize) -- (1)
-        = Player (px, by - bsize - psize) (vx, 0) False
+        -- = Player (px, py) (vx, 0) False
+        = player
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = (playerSize + 1) / 2
-    bsize = (blockSize + 1) / 2
+    psize = (playerSize) / 2
+    bsize = (blockSize) / 2
 
 -- | Seems to find the right collision, but move player like downCollision
 leftCollisionBlockPlayer block player
-    |    (px - psize >= bx + bsize) -- (3)
+    |    (px + psize >= bx - bsize) -- (3)
       && (py - psize <= by + bsize) -- (1)
       && (py + psize >= by - bsize) -- (5)
-      && not (py + psize <= by + bsize) -- not (4)
-      && not (px + psize >= bx - bsize) -- not (2)
-        = Player (bx + bsize + psize, py) (0, vy) jump
+      && not (py + playerSize/2 <= by + blockSize/2) -- not (4)
+      && not (px >= bx) -- not (2)
+        = Player (px + pbDelta, py) (0, vy) jump
+        
+        
+        
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = (playerSize + 1) / 2
-    bsize = (blockSize + 1) / 2
+    psize = (playerSize - 1) / 2
+    bsize = (blockSize - 1) / 2
+    pbDelta = (-blockSize/2 - playerSize/2) + (bx - px)
 
 -- | Seems to find the right collision, but move player like downCollision
 rightCollisionBlockPlayer block player
-    |    (px + psize >= bx - bsize) -- (2)
+    |    (px - psize <= bx + bsize) -- (2)
       && (py - psize <= by + bsize) -- (1)
       && (py + psize >= by - bsize) -- (5)
       && not (py + psize <= by + bsize) -- not (4)
-      && not (px - psize >= bx + bsize) -- not (3)
-        = Player (bx - bsize - psize, py) (0, vy) jump
+      && not (px <= bx ) -- not (3)
+        = Player (px + pbDelta, py) (0, vy) jump
+        
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = (playerSize + 1) / 2
-    bsize = (blockSize + 1) / 2
+    psize = (playerSize - 1) / 2
+    bsize = (blockSize - 1) / 2
+    pbDelta = (playerSize/2 + blockSize/2) - (px - bx)
 
 upCollisionEntityPlayer player entity = undefined
 downCollisionEntityPlayer player entity = undefined
