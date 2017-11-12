@@ -69,7 +69,9 @@ mkPlayer col (Player (x,y) _ _) = translate x y $ color col $
 
 -- | Update the game.
 update :: Float -> GameState -> GameState
-update seconds game = moveGame seconds (handleKeys game)
+update seconds game
+    | pKey $ pressedKeys game = game
+    | otherwise = moveGame seconds (handleKeys game)
 
 main :: IO ()
 main = play window background fps initialState render checkKeys update

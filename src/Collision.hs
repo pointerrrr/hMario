@@ -70,7 +70,7 @@ leftCollisionBlockPlayer block player
 
 -- | Seems to find the right collision, but move player like downCollision
 rightCollisionBlockPlayer block player
-    |    (px - psize <= bx + bsize) -- (2)
+    |    (px - psize <= bx + bsize) -- (3)
       && (py + psize <= by - bsize) -- (1)
       && (py - psize >= by + bsize) -- (5)
         = Player (bx + bsize + psize, py) (0, vy) jump

@@ -39,8 +39,6 @@ checkKeys (EventKey (Char 'x') Up _ _) game@(Game _ _ _ keys) =
     game { pressedKeys = keys { xKey = False }}
 -- p
 checkKeys (EventKey (Char 'p') Down _ _) game@(Game _ _ _ keys) =
-    game { pressedKeys = keys { pKey = True }}
-checkKeys (EventKey (Char 'p') Up _ _) game@(Game _ _ _ keys) =
-    game { pressedKeys = keys { pKey = False }}
+    game { pressedKeys = keys { pKey = not $ pKey keys }}
 -- Do nothing for all other events.
 checkKeys _ game = game
