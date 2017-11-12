@@ -72,65 +72,66 @@ upCollisionEntityPlayer player entity
       && (px + psize >= ex - esize + 3)
       && (px - psize <= ex + esize - 3)
       && (py >= ey)
-        = Player (px, py + pbDelta) (vx, 0) True pSize
-    | otherwise = player
+        = Player (px, py + pbDelta) (vx, 0) True 50
+    | otherwise = Player (px, py) (vx, vy) True 50
   where
     (ex, ey)  = location entity
+    eSize = size entity
     Player (px, py) (vx, vy) _  pSize = player
     psize = (pSize ) / 2
-    esize = (size entity ) / 2
-    pbDelta = (playerSize/2 + blockSize/2) -(py - ey)
+    esize = (eSize ) / 2
+    pbDelta = (playerSize/2 + eSize/2) -(py - ey)
 
 downCollisionEntityPlayer :: Entity a => Player -> a -> Player
-downCollisionEntityPlayer player entity = undefined
-    {- |    (py + psize >= by - bsize) -- (4)
-      && (px + psize >= bx - bsize + 3) -- (2)
-      && (px - psize <= bx + bsize - 3) -- (3)
-      && (py <= by ) -- (1)
-        = Player (px, py) (vx, -5) False pSize
+downCollisionEntityPlayer player entity
+    |    (py + psize >= by - bsize)
+      && (px + psize >= bx - bsize + 3)
+      && (px - psize <= bx + bsize - 3)
+      && (py <= by )
+        = Player (px, py) (vx, -5) False 50
 
     | otherwise = player
   where
-    Block _ (bx, by)  = block
+    (bx, by)  = location entity
+    eSize = size entity
     Player (px, py) (vx, vy) jump pSize = player
-    psize = (playerSize) / 2
-    bsize = (blockSize) / 2-}
+    psize = (pSize) / 2
+    bsize = (eSize) / 2
 
 leftCollisionEntityPlayer :: Entity a => Player -> a -> Player
-leftCollisionEntityPlayer player entity = undefined
-    {-|    (px + psize >= bx - bsize) -- (3)
+leftCollisionEntityPlayer player entity
+    |    (px + psize >= bx - bsize) -- (3)
       && (py - psize <= by + bsize) -- (1)
       && (py + psize >= by - bsize) -- (5)
       && not (py - psize >= by + bsize) -- not (4)
       && not (px >= bx) -- not (2)
-        = Player (px + pbDelta, py) (0, vy) jump pSize
-
-
-
+        = Player (px + pbDelta, py) (0, vy) jump 50
     | otherwise = player
   where
-    Block _ (bx, by)  = block
+    (bx, by)  = location entity
+    eSize = size entity
     Player (px, py) (vx, vy) jump pSize = player
-    psize = (playerSize - 1) / 2
-    bsize = (blockSize - 1) / 2
-    pbDelta = (-blockSize/2 - playerSize/2) + (bx - px)-}
+    psize = (pSize - 1) / 2
+    bsize = (eSize - 1) / 2
+    pbDelta = (-eSize/2 - pSize/2) + (bx - px)
 
 rightCollisionEntityPlayer :: Entity a => Player -> a -> Player
-rightCollisionEntityPlayer player entity = undefined
-    {-|    (px - psize <= bx + bsize) -- (2)
-      && (py - psize <= by + bsize) -- (1)
-      && (py + psize >= by - bsize) -- (5)
-      && not (py - psize >= by + bsize) -- not (4)
+rightCollisionEntityPlayer player entity 
+    |    (px - psize <= bx + bsize)
+      && (py - psize <= by + bsize)
+      && (py + psize >= by - bsize)
+      && not (py - psize >= by + bsize)
       && not (px <= bx ) -- not (3)
-        = Player (px + pbDelta, py) (0, vy) jump pSize
+        = Player (px + pbDelta, py) (0, vy) jump 50
 
     | otherwise = player
   where
-    Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump pSize = player
+    (bx, by) = location entity
     psize = (playerSize - 1) / 2
-    bsize = (blockSize - 1) / 2
-    pbDelta = (playerSize/2 + blockSize/2) - (px - bx)-}
+    eSize = size entity
+    bsize = (eSize - 1) / 2
+    pbDelta = (playerSize/2 + eSize/2) - (px - bx)
 
 -- Enemy collisions
 

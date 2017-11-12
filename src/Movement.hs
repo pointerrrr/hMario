@@ -1,5 +1,6 @@
 module Movement where
 
+import Collision
 import Constants
 import Definitions
 import Entities
@@ -24,17 +25,23 @@ enemyPhysics seconds (Enemy eType pos (x,y) esize) =
 
 collision :: Float -> GameState -> GameState
 collision seconds game =
-    game {player = foldr subFoldr playerInstance blockList
-          , enemies = map (\x -> foldr subFoldr x blockList) enemyList}
+    game {player = foldr (flip subFoldr2) subPlayer subEnemyList
+          , enemies = subEnemyList}
   where
     playerInstance = player game
     (x,y) = location playerInstance
     blockList = blocks game
     enemyList = enemies game
+    subEnemyList = map (\x -> foldr subFoldr x blockList) enemyList
+    subPlayer =foldr subFoldr playerInstance blockList
 
 subFoldr :: Entity a => Block -> a -> a
 subFoldr block = rightCollisionBlock block . leftCollisionBlock block .
                     upCollisionBlock block . downCollisionBlock block
+                    
+subFoldr2 :: Entity a => Player -> a -> Player
+subFoldr2 player = rightCollisionEntityPlayer player . leftCollisionEntityPlayer player .
+                    upCollisionEntityPlayer player . downCollisionEntityPlayer player
 
 moveEntities :: Float -> GameState -> GameState
 moveEntities seconds game@(Game player enemies _ keys) =
