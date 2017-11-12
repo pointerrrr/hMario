@@ -1,13 +1,9 @@
 module Entities where
 
 import Graphics.Gloss
-import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Data.Vector
-import Graphics.Gloss.Data.ViewPort
-import Graphics.Gloss.Interface.Pure.Game
 
 import Collision
-import Constants
 import Definitions
 
 instance Entity Player where

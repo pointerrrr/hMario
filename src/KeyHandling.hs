@@ -1,9 +1,5 @@
 module KeyHandling where
 
-import Graphics.Gloss
-import Graphics.Gloss.Data.Picture
-import Graphics.Gloss.Data.Vector
-import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 
 import Definitions

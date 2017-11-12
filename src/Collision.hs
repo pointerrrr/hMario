@@ -33,7 +33,7 @@ upCollisionBlockPlayer block player
       && (px + psize >= bx - bsize)     -- (2)
       && (px - psize <= bx + bsize)     -- (3)
       && (py - psize < by - bsize)      -- (4)
-        = Player (px, by - bsize - psize) (vx, 0) True
+        = Player (px, by - bsize - psize) (vx, 0) False
     | otherwise = player
   where
     Block _ (bx, by)  = block
@@ -47,7 +47,7 @@ downCollisionBlockPlayer block player
       && (px + psize >= bx - bsize) -- (2)
       && (px - psize <= bx + bsize) -- (3)
       && (py + psize >= by + bsize) -- (6)
-        = Player (px, by + bsize + psize) (vx, 0) False
+        = Player (px, by + bsize + psize) (vx, 0) True
     | otherwise = player
   where
     Block _ (bx, by)  = block
