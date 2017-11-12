@@ -59,54 +59,68 @@ downCollisionEntityPlayer   :: Entity a => Player -> a -> Player
 leftCollisionEntityPlayer   :: Entity a => Player -> a -> Player
 rightCollisionEntityPlayer  :: Entity a => Player -> a -> Player
 
+-- Predicates
+--    1. playerBottom not above blockTop
+--      (*) (py + psize >= by - bsize)
+--    2. playerRight not left to blockLeft
+--      (*) (px + psize >= bx - bsize)
+--    3. playerLeft not right to blockRight
+--      (*) (px - psize <= bx + bsize)
+--    4. playerTop not under blockTop
+--      (*) (py - psize < by - bsize)
+--    5. playerTop not under blockBottom
+--      (*) (py - psize <= by + bsize)
+--    6. playerBottom not above blockBottom
+--      (*) (py + psize >= by + bsize)
+
 upCollisionBlockPlayer block player
-    |    (py + psize <= by - bsize) -- playerBottom not above blockTop
-      && (px + psize >= bx - bsize) -- playerRight not left to blockLeft
-      && (px - psize <= bx + bsize) -- playerLeft not right to blockRight
-      && (py - psize > by + bsize) -- playerTop not under blockTop
-        = Player (px, by - bsize - psize - 5) (vx, 0) True
+    |    (py + psize >= by - bsize)     -- (1)
+      && (px + psize >= bx - bsize)     -- (2)
+      && (px - psize <= bx + bsize)     -- (3)
+      && (py - psize < by - bsize)      -- (4)
+        = Player (px, by - bsize - psize) (vx, 0) True
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) _ = player
-    psize = playerSize / 2
-    bsize = blockSize / 2
+    psize = (playerSize + 1) / 2
+    bsize = (blockSize + 1) / 2
 
 downCollisionBlockPlayer block player
-    |    (py - psize >= by + bsize) -- playerTop not under blockBottom
-      && (px + psize >= bx - bsize) -- playerRight not left to blockLeft
-      && (px - psize <= bx + bsize) -- playerLeft not right to blockRight
-      && (py + psize >= by + bsize) -- playerBottom not above blockBottom
-        = Player (px, by + bsize + psize + 5) (vx, 0) False
+    |    (py - psize <= by + bsize) -- (5)
+      && (px + psize >= bx - bsize) -- (2)
+      && (px - psize <= bx + bsize) -- (3)
+      && (py + psize >= by + bsize) -- (6)
+        = Player (px, by + bsize + psize) (vx, 0) False
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = playerSize / 2
-    bsize = blockSize / 2
+    psize = (playerSize + 1) / 2
+    bsize = (blockSize + 1) / 2
 
 leftCollisionBlockPlayer block player
-    |    (px + psize >= bx - bsize) -- playerRight not left to blockLeft
-      && (py + psize <= by - bsize) -- playerBottom not above blockTop
-      && (py - psize >= by + bsize) -- playerTop not under blockBottom
+    |    (px + psize >= bx - bsize) -- (2)
+      && (py + psize <= by - bsize) -- (1)
+      && (py - psize >= by + bsize) -- (5)
         = Player (bx - bsize + psize, py) (0, vy) jump
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = playerSize / 2
-    bsize = blockSize / 2
+    psize = (playerSize + 1) / 2
+    bsize = (blockSize + 1) / 2
 rightCollisionBlockPlayer block player
-    |    (px - psize <= bx + bsize) -- playerLeft not right to blockLeft
-      && (py + psize <= by - bsize) -- playerBottom not above blockTop
-      && (py - psize >= by + bsize) -- playerTop not under blockBottom
+    |    (px - psize <= bx + bsize) -- (2)
+      && (py + psize <= by - bsize) -- (1)
+      && (py - psize >= by + bsize) -- (5)
         = Player (bx + bsize + psize, py) (0, vy) jump
     | otherwise = player
   where
     Block _ (bx, by)  = block
     Player (px, py) (vx, vy) jump = player
-    psize = playerSize / 2
-    bsize = blockSize / 2
+    psize = (playerSize + 1) / 2
+    bsize = (blockSize + 1) / 2
 
 upCollisionEntityPlayer player entity = undefined
 downCollisionEntityPlayer player entity = undefined

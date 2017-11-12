@@ -24,7 +24,10 @@ initialState = Game
 initialBlockList :: [Block]
 initialBlockList = [ Block Stone (x, -120)
                    | x <- [-10 * blockSize, -9 * blockSize .. 10 * blockSize]
-                   ]
+                   ] ++ [Block Stone (x,y)
+                        | x <- [-5 * blockSize]
+                        , y <- [-120, -110 .. 50]
+                        ]
 
 width, height, offset :: Int
 width = 300
