@@ -1,9 +1,9 @@
 module Constants where
 
 import Graphics.Gloss
+import System.Random
 
 import Definitions
-import System.Random
 
 -- | The starting state of the game.
 initialState :: Int -> GameState
@@ -27,6 +27,7 @@ initialState rando = Game
         }
     }
 
+-- | The initial list of Blocks, making up the level
 initialBlockList :: [Block]
 initialBlockList = [ Block Stone (x, -120)
                    | x <- [-10 * blockSize, -9 * blockSize .. 10 * blockSize]
@@ -35,20 +36,26 @@ initialBlockList = [ Block Stone (x, -120)
                         , y <- [-110,-110+blockSize..50]
                         ]
 
+-- | Window size and placement settings
 width, height, offset :: Int
 width = 300
 height = 300
 offset = 100
 
+-- | Window data
 window :: Display
 window = InWindow "Moria" (width, height) (offset, offset)
 
+-- | Background color
 background :: Color
 background = black
 
+-- | Set player speed used in movement calculations
 playerSpeed :: Float
 playerSpeed = 50
 
+-- | Set default properties for Entities and Projectiles
+-- Used for movement and collision calculations
 playerSize, blockSize, goombaSize, jumpMomentum, gravity :: Float
 projectileSpeed, projectileSize :: Float
 playerSize = 20
