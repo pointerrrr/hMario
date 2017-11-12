@@ -23,7 +23,8 @@ physicsSim seconds game = game {player =
 
 
 collision :: Float -> GameState -> GameState
-collision seconds game = game {player = foldr subFoldr playerInstance blockList}
+collision seconds game =
+    game {player = foldr subFoldr playerInstance blockList}
   where
     playerInstance = player game
     (x,y) = location playerInstance

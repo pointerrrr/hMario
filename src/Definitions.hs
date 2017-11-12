@@ -6,6 +6,20 @@ import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 
+class Show a => Entity a where
+    location  :: a -> Point
+    direction :: a -> Vector
+    move :: Float -> a ->  a
+    canJump :: a -> Bool
+    upCollisionBlock :: Block -> a -> a
+    downCollisionBlock :: Block -> a -> a
+    leftCollisionBlock :: Block -> a -> a
+    rightCollisionBlock :: Block -> a -> a
+    upCollisionEntity :: Entity b => a -> b -> a
+    downCollisionEntity :: Entity b => a -> b -> a
+    leftCollisionEntity :: Entity b => a -> b -> a
+    rightCollisionEntity :: Entity b => a -> b -> a
+
 -- | Data describing the state of the game.
 data GameState = Game
     { player :: Player

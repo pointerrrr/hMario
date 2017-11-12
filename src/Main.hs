@@ -6,49 +6,11 @@ import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 
+import Constants
 import Definitions
 import Entities
 import KeyHandling
 import Movement
-
-width, height, offset :: Int
-width = 300
-height = 300
-offset = 100
-
-window :: Display
-window = InWindow "Moria" (width, height) (offset, offset)
-
-background :: Color
-background = black
-
-playerSpeed :: Float
-playerSpeed = 25
-
-playerSize, blockSize :: Float
-playerSize = 20
-blockSize = 10
-
--- | Number of frames to show per seconds
-fps :: Int
-fps = 60
-
--- | The starting state of the game.
-initialState :: GameState
-initialState = Game
-    { player = Player (0,0) (0,0) True
-    , enemies = []
-    , blocks = []
-    , pressedKeys = PressedKeys
-        { upKey = False
-        , downKey = False
-        , leftKey = False
-        , rightKey = False
-        , zKey = False
-        , xKey = False
-        , pKey = False
-        }
-    }
 
 handleKeys :: GameState -> GameState
 handleKeys = doJump . moveX
@@ -86,21 +48,27 @@ doJump game
 -- | Convert a game state into a picture.
 render :: GameState -> Picture
 render game =
-    pictures [ walls
+    pictures [ pictureBlocks game
              , mkPlayer white (player game)
              ]
   where
-    wall :: Float -> Picture
-    wall offset = translate 0 offset $
-                    color wallColor $
-                      rectangleSolid 270 10
+    drawBlock :: Block -> Picture
+    drawBlock (Block eType (x, y)) = translate x y $
+                                color (blockColor eType) $
+                                    rectangleSolid blockSize blockSize
 
-    wallColor = greyN 0.5
-    walls = pictures [wall 150, wall (-150)]
+    blockColor :: BlockType -> Color
+    blockColor Stone = green
+    blockColor Brick = orange
+    blockColor Coin = yellow
+    blockColor PowerUp = blue
+
+    pictureBlocks :: GameState -> Picture
+    pictureBlocks = pictures . map drawBlock . blocks
 
 mkPlayer :: Color -> Player -> Picture
 mkPlayer col (Player (x,y) _ _) = translate x y $ color col $
-                                    rectangleSolid 26 86
+                                    rectangleSolid 25 25
 
 -- | Update the game.
 update :: Float -> GameState -> GameState
