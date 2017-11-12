@@ -15,25 +15,25 @@ rightCollisionEntityPlayer  :: Entity a => Player -> a -> Player
 
 -- Predicates
 --    1. playerBottom not above blockTop
---      (*) (py + psize >= by - bsize)
+--      (*) (py - psize <= by + bsize)
 --    2. playerRight not left to blockLeft
 --      (*) (px + psize >= bx - bsize)
 --    3. playerLeft not right to blockRight
 --      (*) (px - psize <= bx + bsize)
 --    4. playerTop not under blockTop
---      (*) (py - psize < by - bsize)
+--      (*) (py + psize <= by + bsize)
 --    5. playerTop not under blockBottom
---      (*) (py - psize <= by + bsize)
+--      (*) (py + psize <= by - bsize)
 --    6. playerBottom not above blockBottom
 --      (*) (py + psize >= by + bsize)
 
 -- | Up and down are somehow switched, dus upCollision has jump = False (temp)
 upCollisionBlockPlayer block player
-    |    (py + psize >= by - bsize)     -- (1)
+    |    (py - psize <= by + bsize)     -- (1)
       && (px + psize >= bx - bsize)     -- (2)
       && (px - psize <= bx + bsize)     -- (3)
-      && (py - psize < by - bsize)      -- (4)
-        = Player (px, by - bsize - psize) (vx, 0) False
+      && (py + psize >= by - bsize)     -- (5)
+        = Player (px, by + bsize + psize) (vx, 0) True
     | otherwise = player
   where
     Block _ (bx, by)  = block
@@ -43,11 +43,11 @@ upCollisionBlockPlayer block player
 
 -- | Up/down switched, thus here jump = True (for now)
 downCollisionBlockPlayer block player
-    |    (py - psize <= by + bsize) -- (5)
+    |    (py + psize <= by + bsize) -- (4)
       && (px + psize >= bx - bsize) -- (2)
       && (px - psize <= bx + bsize) -- (3)
-      && (py + psize >= by + bsize) -- (6)
-        = Player (px, by + bsize + psize) (vx, 0) True
+      && (py - psize <= by + bsize) -- (1)
+        = Player (px, by - bsize - psize) (vx, 0) False
     | otherwise = player
   where
     Block _ (bx, by)  = block
@@ -57,10 +57,12 @@ downCollisionBlockPlayer block player
 
 -- | Seems to find the right collision, but move player like downCollision
 leftCollisionBlockPlayer block player
-    |    (px + psize >= bx - bsize) -- (2)
-      && (py + psize <= by - bsize) -- (1)
-      && (py - psize >= by + bsize) -- (5)
-        = Player (bx - bsize + psize, py) (0, vy) jump
+    |    (px - psize >= bx + bsize) -- (3)
+      && (py - psize <= by + bsize) -- (1)
+      && (py + psize >= by - bsize) -- (5)
+      && not (py + psize <= by + bsize) -- not (4)
+      && not (px + psize >= bx - bsize) -- not (2)
+        = Player (bx + bsize + psize, py) (0, vy) jump
     | otherwise = player
   where
     Block _ (bx, by)  = block
@@ -70,10 +72,12 @@ leftCollisionBlockPlayer block player
 
 -- | Seems to find the right collision, but move player like downCollision
 rightCollisionBlockPlayer block player
-    |    (px - psize <= bx + bsize) -- (3)
-      && (py + psize <= by - bsize) -- (1)
-      && (py - psize >= by + bsize) -- (5)
-        = Player (bx + bsize + psize, py) (0, vy) jump
+    |    (px + psize >= bx - bsize) -- (2)
+      && (py - psize <= by + bsize) -- (1)
+      && (py + psize >= by - bsize) -- (5)
+      && not (py + psize <= by + bsize) -- not (4)
+      && not (px - psize >= bx + bsize) -- not (3)
+        = Player (bx - bsize - psize, py) (0, vy) jump
     | otherwise = player
   where
     Block _ (bx, by)  = block
