@@ -17,6 +17,7 @@ handleKeys = doJump . moveX
 
 moveX :: GameState -> GameState
 moveX game
+    | (state (player game)) /= Alive = game
     | left && not right = game { player = Player (location playerObject)
         (-finalSpeed, ySpeed) (canJump playerObject) (size playerObject)
             (state playerObject)}
