@@ -23,7 +23,7 @@ tickEnemies seconds game = game{ player = killPlayer newPlayer
     enemyList = enemies game
     aliveEnemies = filter (\x -> state x /= Dead )(map killEnemy enemyList)
     playerPos = location (player game)
-    projectileList = mapMaybe (tickEnemy (fst genTuple) playerPos) aliveEnemies ++
+    projectileList = mapMaybe (tickEnemy (fst genTuple) playerInstance) aliveEnemies ++ (projectiles game)
         (projectiles game)
     movedProjectileList = map (moveProjectile seconds) projectileList
     genTuple = next (generator game)
@@ -38,8 +38,8 @@ tickEnemies seconds game = game{ player = killPlayer newPlayer
 
 
 
-tickEnemy :: Int -> Point -> Enemy -> Maybe Projectile
-tickEnemy rando point (Enemy PiranhaPlant pos _ _ Alive) =
+tickEnemy :: Int -> Player -> Enemy -> Maybe Projectile
+tickEnemy rando (Player point dir jump psize Alive) (Enemy PiranhaPlant pos _ _ Alive) = if (rando `mod` 60) == 0 then Just (Projectile pos ((projectileSpeed, projectileSpeed) * (normalizeV (point - pos))) projectileSize) else Nothing
     if (rando `mod` 60) == 0
         then Just (Projectile pos ((projectileSpeed, projectileSpeed) *
             (normalizeV (point - pos))) projectileSize)
@@ -104,7 +104,7 @@ moveEntities seconds game@(Game player enemies projectileList _ _ _ keys) =
 
 killPlayer :: Player -> Player
 killPlayer player@(Player _ _ _ _ Alive) = player
-killPlayer player@(Player _ _ _ _ Dead) = player
+killPlayer player@(Player pos dir jump psize Dead) = (Player (0, -1000) dir jump psize Dead)
 killPlayer (Player pos dir jump psize pstate) =
     (Player pos dir jump psize (succ pstate))
 
