@@ -34,7 +34,8 @@ moveX game
 doJump :: GameState -> GameState
 doJump game
     | up && canJump playerObject = game { player =
-        Player (location playerObject) (xSpeed, ySpeed+50) False (size playerObject)}
+        Player (location playerObject) (xSpeed, ySpeed+50) False
+            (size playerObject)}
     | otherwise = game
   where
     keys = pressedKeys game
@@ -54,7 +55,7 @@ render game =
     drawBlock (Block bType (x, y)) = translate x y $
                                 color (blockColor bType) $
                                     rectangleSolid blockSize blockSize
-                                    
+
     drawEnemies :: Enemy -> Picture
     drawEnemies (Enemy eType (x, y) _ eSize) = translate x y $
                                 color (red) $
@@ -68,10 +69,10 @@ render game =
 
     pictureBlocks :: GameState -> Picture
     pictureBlocks = pictures . map drawBlock . blocks
-    
+
     pictureEnemies :: GameState -> Picture
     pictureEnemies = pictures . map drawEnemies . enemies
-    
+
 
 mkPlayer :: Color -> Player -> Picture
 mkPlayer col (Player (x,y) _ _ pSize) = translate x y $ color col $

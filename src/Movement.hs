@@ -11,14 +11,16 @@ moveGame seconds game = collision  seconds
 physicsSim :: Float -> GameState -> GameState
 physicsSim seconds game = game {player =
     Player (location playerInstance) (x, y-60*seconds)
-        (canJump playerInstance) (size playerInstance), enemies = map (enemyPhysics seconds) enemyList}
+        (canJump playerInstance) (size playerInstance)
+        , enemies = map (enemyPhysics seconds) enemyList}
   where
     playerInstance = player game
     (x,y) = direction playerInstance
     enemyList = enemies game
 
 enemyPhysics :: Float -> Enemy -> Enemy
-enemyPhysics seconds (Enemy eType pos (x,y) esize) = Enemy eType pos (x, y-60*seconds) esize
+enemyPhysics seconds (Enemy eType pos (x,y) esize) =
+    Enemy eType pos (x, y-60*seconds) esize
 
 collision :: Float -> GameState -> GameState
 collision seconds game =

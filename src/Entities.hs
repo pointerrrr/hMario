@@ -41,7 +41,8 @@ movePlayer seconds (Player pos dir jump pSize) =
     Player (movePoint seconds pos dir) dir jump pSize
 
 moveEnemy :: Float -> Enemy -> Enemy
-moveEnemy seconds (Enemy eType pos dir eSize) = Enemy eType (movePoint seconds pos dir) dir eSize
+moveEnemy seconds (Enemy eType pos dir eSize) =
+    Enemy eType (movePoint seconds pos dir) dir eSize
 
 movePoint :: Float -> Point -> Vector -> Point
 movePoint seconds (x,y) (vx, vy) = (x + vx * seconds, y + vy * seconds)
