@@ -7,8 +7,8 @@ import Definitions
 -- | The starting state of the game.
 initialState :: GameState
 initialState = Game
-    { player = Player (0,100) (0,0) True
-    , enemies = []
+    { player = Player (0,100) (0,0) True playerSize
+    , enemies = [(Enemy Goomba (0,0) (-10,0) goombaSize)]
     , blocks = initialBlockList
     , pressedKeys = PressedKeys
         { upKey = False
@@ -26,7 +26,7 @@ initialBlockList = [ Block Stone (x, -120)
                    | x <- [-10 * blockSize, -9 * blockSize .. 10 * blockSize]
                    ] ++ [Block Stone (x,y)
                         | x <- [-5 * blockSize]
-                        , y <- [-80, -70 .. 50]
+                        , y <- [-110,-100..50]
                         ]
 
 width, height, offset :: Int
@@ -43,9 +43,10 @@ background = black
 playerSpeed :: Float
 playerSpeed = 50
 
-playerSize, blockSize :: Float
+playerSize, blockSize, goombaSize :: Float
 playerSize = 20
 blockSize = 10
+goombaSize = 15
 
 -- | Number of frames to show per seconds
 fps :: Int

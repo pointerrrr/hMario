@@ -8,6 +8,7 @@ class Show a => Entity a where
     direction :: a -> Vector
     move :: Float -> a ->  a
     canJump :: a -> Bool
+    size :: a -> Float
     upCollisionBlock :: Block -> a -> a
     downCollisionBlock :: Block -> a -> a
     leftCollisionBlock :: Block -> a -> a
@@ -35,10 +36,10 @@ data PressedKeys = PressedKeys
     , pKey :: Bool
     } deriving Show
 
-data Player = Player Point Vector Bool
+data Player = Player Point Vector Bool Float
     deriving Show
 
-data Enemy = Enemy EnemyType Point Vector
+data Enemy = Enemy EnemyType Point Vector Float
     deriving Show
 
 data EnemyType = Goomba | Koopa | PiranhaPlant | BulletBill deriving Show

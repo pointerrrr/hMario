@@ -15,12 +15,12 @@ handleKeys = doJump . moveX
 moveX :: GameState -> GameState
 moveX game
     | left && not right = game { player = Player (location playerObject)
-        (-finalSpeed, ySpeed) (canJump playerObject)}
+        (-finalSpeed, ySpeed) (canJump playerObject) (size playerObject)}
     | right && not left = game { player = Player (location playerObject)
-        (finalSpeed, ySpeed) (canJump playerObject)}
+        (finalSpeed, ySpeed) (canJump playerObject) (size playerObject)}
     | not right && not left =
         game { player = Player (location playerObject) (0, ySpeed)
-          (canJump playerObject)}
+          (canJump playerObject) (size playerObject)}
     | otherwise = game
   where
     keys = pressedKeys game
@@ -34,7 +34,7 @@ moveX game
 doJump :: GameState -> GameState
 doJump game
     | up && canJump playerObject = game { player =
-        Player (location playerObject) (xSpeed, ySpeed+50) False}
+        Player (location playerObject) (xSpeed, ySpeed+50) False (size playerObject)}
     | otherwise = game
   where
     keys = pressedKeys game
@@ -46,13 +46,19 @@ doJump game
 render :: GameState -> Picture
 render game =
     pictures [ pictureBlocks game
+             , pictureEnemies game
              , mkPlayer white (player game)
              ]
   where
     drawBlock :: Block -> Picture
-    drawBlock (Block eType (x, y)) = translate x y $
-                                color (blockColor eType) $
+    drawBlock (Block bType (x, y)) = translate x y $
+                                color (blockColor bType) $
                                     rectangleSolid blockSize blockSize
+                                    
+    drawEnemies :: Enemy -> Picture
+    drawEnemies (Enemy eType (x, y) _ eSize) = translate x y $
+                                color (red) $
+                                    rectangleSolid eSize eSize
 
     blockColor :: BlockType -> Color
     blockColor Stone = green
@@ -62,10 +68,14 @@ render game =
 
     pictureBlocks :: GameState -> Picture
     pictureBlocks = pictures . map drawBlock . blocks
+    
+    pictureEnemies :: GameState -> Picture
+    pictureEnemies = pictures . map drawEnemies . enemies
+    
 
 mkPlayer :: Color -> Player -> Picture
-mkPlayer col (Player (x,y) _ _) = translate x y $ color col $
-                                    rectangleSolid playerSize playerSize
+mkPlayer col (Player (x,y) _ _ pSize) = translate x y $ color col $
+                                    rectangleSolid pSize pSize
 
 -- | Update the game.
 update :: Float -> GameState -> GameState
