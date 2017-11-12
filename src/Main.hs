@@ -113,14 +113,15 @@ update seconds game
 
 main :: IO ()
 main = do
-    -- IO code from: https://hackage.haskell.org/package/base-4.10.0.0/docs/System-IO.html#t:IOMode
+    -- source: https://hackage.haskell.org/package/base-4.10.0.0/docs/System-IO.html#t:IOMode
     currentdir <- getCurrentDirectory
     file <- openFile (currentdir ++ "\\src\\playcount.txt") ReadWriteMode
-    content <- hGetContents file
-    fullList content `seq` hClose file
+    fileContents <- hGetContents file
+    fullList fileContents `seq` hClose file
     write <- writeFile (currentdir ++ "\\src\\playcount.txt")
-        (show((stringToInt content) + 1))
-    -- Above code from: https://hackage.haskell.org/package/base-4.10.0.0/docs/System-IO.html#t:IOMode
+        (if (fileContents /= [])
+            then show((stringToInt fileContents) + 1)
+            else (show 1))
     randInt <- randomRIO (1,100000)
     play window background fps (initialState randInt) render checkKeys update
 
