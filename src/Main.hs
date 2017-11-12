@@ -18,9 +18,11 @@ handleKeys = doJump . moveX
 moveX :: GameState -> GameState
 moveX game
     | left && not right = game { player = Player (location playerObject)
-        (-finalSpeed, ySpeed) (canJump playerObject) (size playerObject) (state playerObject)}
+        (-finalSpeed, ySpeed) (canJump playerObject) (size playerObject)
+            (state playerObject)}
     | right && not left = game { player = Player (location playerObject)
-        (finalSpeed, ySpeed) (canJump playerObject) (size playerObject) (state playerObject)}
+        (finalSpeed, ySpeed) (canJump playerObject) (size playerObject)
+            (state playerObject)}
     | not right && not left =
         game { player = Player (location playerObject) (0, ySpeed)
           (canJump playerObject) (size playerObject) (state playerObject)}
@@ -72,7 +74,7 @@ render game =
                                             | estate < Dying10 = 3
                                             | estate < Dying15 = 4
                                             | otherwise = 5
-                                    
+
     drawProjectile :: Projectile -> Picture
     drawProjectile (Projectile (x,y) _ pSize) = translate x y $
                                                     color (blue) $
@@ -89,7 +91,7 @@ render game =
 
     pictureEnemies :: GameState -> Picture
     pictureEnemies = pictures . map drawEnemies . enemies
-    
+
     pictureProjectiles :: GameState -> Picture
     pictureProjectiles = pictures . map drawProjectile . projectiles
 
@@ -116,14 +118,15 @@ main = do
     file <- openFile (currentdir ++ "\\src\\playcount.txt") ReadWriteMode
     content <- hGetContents file
     fullList content `seq` hClose file
-    write <- writeFile (currentdir ++ "\\src\\playcount.txt") (show((stringToInt content) + 1))
+    write <- writeFile (currentdir ++ "\\src\\playcount.txt")
+        (show((stringToInt content) + 1))
     -- Above code from: https://hackage.haskell.org/package/base-4.10.0.0/docs/System-IO.html#t:IOMode
     randInt <- randomRIO (1,100000)
     play window background fps (initialState randInt) render checkKeys update
 
 stringToInt :: [Char] -> Int
 stringToInt s = read s :: Int
-    
+
 fullList :: [a] -> ()
 fullList [] = ()
 fullList (x:xs) = fullList xs

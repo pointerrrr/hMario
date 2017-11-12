@@ -9,7 +9,9 @@ import System.Random
 initialState :: Int -> GameState
 initialState rando = Game
     { player = Player (0,100) (0,0) True playerSize Alive
-    , enemies = [(Enemy Goomba (0,0) (-10,0) goombaSize Alive), (Enemy PiranhaPlant (-75,65) (0,0) goombaSize Alive)]
+    , enemies = [ (Enemy Goomba (0,0) (-10,0) goombaSize Alive)
+                , (Enemy PiranhaPlant (-75,65) (0,0) goombaSize Alive)
+                ]
     , projectiles = []
     , blocks = initialBlockList
     , generator = mkStdGen (rando)
@@ -47,7 +49,8 @@ background = black
 playerSpeed :: Float
 playerSpeed = 50
 
-playerSize, blockSize, goombaSize, jumpMomentum, gravity, projectileSpeed, projectileSize :: Float
+playerSize, blockSize, goombaSize, jumpMomentum, gravity :: Float
+projectileSpeed, projectileSize :: Float
 playerSize = 20
 blockSize = 15
 goombaSize = 15

@@ -47,8 +47,12 @@ data Player = Player Point Vector Bool Float State
 data Enemy = Enemy EnemyType Point Vector Float State
     deriving Show
 
-data State = Alive | Dying1 | Dying2 | Dying3 | Dying4 | Dying5 | Dying6 | Dying7 | Dying8 | Dying9 | Dying10 | Dying11 | Dying12 | Dying13 | Dying14 | Dying15 | Dying16 | Dying17 | Dying18 | Dying19 | Dead deriving (Show, Eq, Ord, Enum)
-    
+data State = Alive
+    | Dying1 | Dying2 | Dying3 | Dying4 | Dying5 | Dying6
+    | Dying7 | Dying8 | Dying9 | Dying10 | Dying11 | Dying12 | Dying13
+    | Dying14 | Dying15 | Dying16 | Dying17 | Dying18 | Dying19
+    | Dead deriving (Show, Eq, Ord, Enum)
+
 data EnemyType = Goomba | Koopa | PiranhaPlant | BulletBill deriving Show
 
 data Projectile = Projectile Point Vector Float deriving Show
